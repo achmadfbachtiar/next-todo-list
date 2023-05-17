@@ -1,20 +1,18 @@
 'use client'
 import { useState, useEffect } from "react"
-import { Grid, Card, Input, Text, Row, Col, Checkbox } from '@nextui-org/react';
+import { Grid, Card, Input, Text, Row, Col, Checkbox, Container } from '@nextui-org/react';
 import { useGetListQuery } from "@/api/todoSlice";
 import TodoItem from './TodoItem';
 
-const TodoList = () => {
-  const [todoList, setTodoList] = useState([])
-
+const TodoList = (props) => {
   const {
     data, 
     error, 
     isLoading
-  } = useGetListQuery({start: 0, limit: 10})
+  } = useGetListQuery({start: props.queryStart, limit: 10})
   
   useEffect(() => {
-    setTodoList(data)
+    props.setTodoList(data)
   }, [data])
 
   return(
@@ -23,17 +21,40 @@ const TodoList = () => {
         <Row>
           <Card css={{ $$cardColor: 'white' }}>
             <Card.Body>
-              {todoList.map((item, index) => {
-                return(
-                  <TodoItem data={item} />
-                )  
-              })}
+              {props.todoList ? 
+                props.todoList.map((item, index) => {
+                  return(
+                    <TodoItem data={item} isEdit={false} key={index} />
+                  )  
+                })
+                :
+                <Container align="center" justify="center">
+                  <Text>
+                    No Data
+                  </Text>
+                </Container>
+              }
             </Card.Body>
           </Card>
         </Row>
       </Grid>
     </Grid.Container>
   )
+}
+
+export async function getStaticProps() {
+  const {
+    data, 
+    error, 
+    isLoading
+  } = useGetListQuery({ start: props.queryStart, limit: 10 })
+ 
+  return {
+    props: {
+      data
+    },
+    revalidate: 10,
+  };
 }
 
 export default TodoList;
